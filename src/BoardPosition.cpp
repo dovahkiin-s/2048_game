@@ -20,6 +20,14 @@ BoardPosition::~BoardPosition()
 }
 
 
+BoardPosition& BoardPosition::operator=(const BoardPosition& rhs)
+{
+    m_value = rhs.m_value;
+    m_was_merged = rhs.m_was_merged;
+    return (*this);
+}
+
+
 const int BoardPosition::get_value() const
 {
     return m_value;

@@ -12,10 +12,13 @@ class BoardPosition
 {
 public:
     BoardPosition();
+    // automatically generated - provided here only for clarity
+    BoardPosition(const BoardPosition& board);
+    BoardPosition& operator=(const BoardPosition& board);
     ~BoardPosition();
     const int get_value() const;
     const bool was_merged() const;
-    void set_value(int new_value);
+    void set_value(int value);
     void set_was_merged(bool was_merged);
     
 private:
