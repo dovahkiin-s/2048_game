@@ -7,7 +7,6 @@
 
 #include "include/BoardView.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 
@@ -40,6 +39,9 @@ int BoardView::draw()
         }
         printf("\n");
     }
+    printf("\n");
+    printf("Score = %d", m_board.get_score());
+    printf("\n");
     printf("\n");
     return res;
 }

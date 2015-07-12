@@ -2,10 +2,14 @@
  * File:   Board.cpp
  * Author: lmachiso
  *
- * Created on July 11, 2015, 1:25 PM
+ * Created on July 11, 2015, 1:20 PM
  */
 
 #include "include/Board.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 Board::Board(int size): m_size(size)
 {
@@ -15,10 +19,18 @@ Board::Board(int size): m_size(size)
         m_board[i] = new BoardPosition[m_size];
     }
 
-    m_board[0][1].set_value(5); 
-    m_board[1][2].set_value(10);
-    m_board[2][3].set_value(25);
-    m_board[1][3].set_value(323);
+    // initialize random number generator
+    srand(time(0));
+
+    // allocate the free position array only once since allocation is expensive
+    m_free_pos_array = new char*[m_size * m_size];
+    for (int i = 0; i < m_size * m_size; i++)
+    {
+        // should be extended for larger boards
+        m_free_pos_array[i] = new char[10];
+    }
+
+    m_score = 0;
 }
 
 
@@ -29,12 +41,25 @@ Board::~Board()
         delete [] m_board[i];
     }
     delete [] m_board;
+
+    // destroy the array of free positions
+    for (int i = 0; i < m_size * m_size; i++)
+    {
+        delete m_free_pos_array[i];
+    }
+    delete []m_free_pos_array;
 }
 
 
 int Board::get_size() const
 {
 	return m_size;
+}
+
+
+int Board::get_score() const
+{
+	return m_score;
 }
 
 
@@ -46,9 +71,32 @@ BoardPosition* Board::get_elem(const int pos_x, const int pos_y) const
 
 int Board::create_random_tile()
 {
+    int size = 0;
+    
+    // get the free position from the matrix
+    create_free_position_array(m_free_pos_array, size);
+    
+    // get the random position of the element
+    int random_pos = rand() % size;
+
+    // decode the indexes of the chosen position
+    int i = 0;
+    int j = 0;
+    sscanf(m_free_pos_array[random_pos], "%d %d", &i, &j);
+
+    // generate the new random value
+    int random_value = get_random_value();
+    m_board[i][j].set_value(random_value);
+
+    // reset the array of free positions
+    for (int i = 0; i < size; i++)
+    {
+        strcpy(m_free_pos_array[i], "");
+    }
+
     return 0;
 }
-    
+
 
 bool Board::is_full() const
 {
@@ -69,12 +117,13 @@ bool Board::find_value(int value) const
     while (i < m_size)
     {
         j = 0;
-        while (j < 0)
+        while (j < m_size)
         {
             if (m_board[i][j].get_value() == value)
             {
                 return true;
             }
+            ++j;
         }
         ++i;
     }
@@ -82,17 +131,20 @@ bool Board::find_value(int value) const
 }
 
 
-int Board::tilt(char direction)
+int Board::tilt(char direction, bool& state_changed)
 {
     int res = 0;
-    BoardPosition* pos_array[4];
+
+    state_changed = false;
+
+    BoardPosition** pos_array = new BoardPosition*[m_size];
     switch (direction)
     {
     case 'w':
         for (int i = 0; i < m_size; ++i)
         {
             create_array('c', i, 'r', pos_array, m_size);
-            tilt_array(pos_array, m_size);
+            tilt_array(pos_array, m_size, state_changed);
             reset_array(pos_array, m_size);
         }
         break;
@@ -100,7 +152,7 @@ int Board::tilt(char direction)
         for (int i = 0; i < m_size; ++i)
         {
             create_array('c', i, 'n', pos_array, m_size);
-            tilt_array(pos_array, m_size);
+            tilt_array(pos_array, m_size, state_changed);
             reset_array(pos_array, m_size);
         }
         break;
@@ -108,7 +160,7 @@ int Board::tilt(char direction)
         for (int i = 0; i < m_size; ++i)
         {
             create_array('l', i, 'r', pos_array, m_size);
-            tilt_array(pos_array, m_size);
+            tilt_array(pos_array, m_size, state_changed);
             reset_array(pos_array, m_size);
         }
         break;
@@ -116,18 +168,19 @@ int Board::tilt(char direction)
         for (int i = 0; i < m_size; ++i)
         {
             create_array('l', i, 'n', pos_array, m_size);
-            tilt_array(pos_array, m_size);
+            tilt_array(pos_array, m_size, state_changed);
             reset_array(pos_array, m_size);
         }
         break;    
     default:
         return -1;
     }
+    delete []pos_array;
     return res;
 }
 
 
-void Board::tilt_array(BoardPosition** pos_array, int size)
+void Board::tilt_array(BoardPosition** pos_array, int size, bool& state_changed)
 {
     // set all positions to not merged status
     for (int i = 0; i < size; ++i)
@@ -144,6 +197,7 @@ void Board::tilt_array(BoardPosition** pos_array, int size)
             while ((j < size - 1) && (pos_array[j + 1]->get_value() == 0))
             {
                 swap_positions(pos_array[j], pos_array[j + 1]);
+                state_changed = true;
                 ++j;
             }
 
@@ -153,6 +207,8 @@ void Board::tilt_array(BoardPosition** pos_array, int size)
                 (!pos_array[j]->was_merged()))
             {
                 merge_positions(pos_array[j], pos_array[j + 1]);
+                m_score = m_score + pos_array[j + 1]->get_value();
+                state_changed = true;
             }
         }
         // else do nothing with the current position
@@ -193,9 +249,9 @@ int Board::create_array(char component, int index, char direction, BoardPosition
         }
         else if (direction == 'r')
         {
-            for (int i = size - 1; i < 0; --i)
+            for (int i = 0; i < size; ++i)
             {
-                pos_array[i] = &m_board[index][i];
+                pos_array[i] = &m_board[index][size - 1 - i];
             }
         }
         else
@@ -214,9 +270,9 @@ int Board::create_array(char component, int index, char direction, BoardPosition
         }
         else if (direction == 'r')
         {
-            for (int i = size - 1; i < 0; --i)
+            for (int i = 0; i < size; ++i)
             {
-                pos_array[i] = &m_board[i][index];
+                pos_array[i] = &m_board[size - 1 - i][index];
             }
         }
         else
@@ -240,4 +296,34 @@ void Board::reset_array(BoardPosition** pos_array, int size)
     {
         pos_array[i] = 0;
     }
+}
+
+
+void Board::create_free_position_array(char** free_pos_array, int& size) const
+{
+    int free_size = 0;
+    for (int i = 0; i < m_size; ++i)
+    {
+        for (int j = 0; j < m_size; ++j)
+        {
+            if (m_board[i][j].get_value() == 0)
+            {
+                sprintf(free_pos_array[free_size], "%d %d", i, j);
+                ++free_size;
+            }
+        }
+    }
+    size = free_size;
+}
+
+
+int Board::get_random_value()
+{
+    // get the value 2 with 90% probability and 4 with 10% probability
+    int value = rand() % 10;
+    if (value < 9)
+    {
+        return 2;
+    }
+    return 4;
 }
