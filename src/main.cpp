@@ -6,8 +6,15 @@ int main()
     int board_size = 0;
     printf("Input game board size: ");
     scanf("%d", &board_size);
-    Game game(board_size);
-    game.play();
+    if (board_size >= 4)
+    {
+        Game game(board_size);
+        game.play();
+    }
+    else
+    {
+        printf("Invalid size! Exiting!\n");
+    }
     printf("\n");
 }
 

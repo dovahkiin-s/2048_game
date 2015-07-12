@@ -14,12 +14,31 @@
 class Game
 {
 public:
+    //! Constructor
+    /*!
+    \param board_size - the size of the game board
+    */
     Game(int board_size);
+    
+    //! Destructor
+    /*!
+    */
     ~Game();
+
+    //! Main loop of the game - handles the game operations
+    /*!
+    \param board_size - the size of the game board
+    */
     void play();
 
 private:
+    //! The board for the game
     Board m_board;
+
+    //! The board viewer - displays the board
+    /*!
+    Can be later replaced with a proper graphical UI viewer
+    */
     BoardView m_board_view;
 };
 
