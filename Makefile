@@ -15,3 +15,11 @@ all: $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
+SRCS_TEST = $(SRC_DIR)/BoardPosition.cpp $(SRC_DIR)/Board.cpp $(SRC_DIR)/TestBoard.cpp $(SRC_DIR)/main_test.cpp
+OBJS_TEST = $(OBJ_DIR)/BoardPosition.o $(OBJ_DIR)/Board.o $(OBJ_DIR)/TestBoard.o $(OBJ_DIR)/main_test.o
+
+test: $(OBJS_TEST)
+	$(CC) $(LFLAGS) $(OBJS_TEST) -lstdc++ -o 2048_test
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CC) $(CFLAGS) -c $< -o $@

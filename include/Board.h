@@ -158,6 +158,9 @@ private:
 
     //! The current score of the board
     int m_score;
+    
+    // only for testing purposes
+    friend class TestBoard;
 };
 
 #endif	/* BOARD_H */
