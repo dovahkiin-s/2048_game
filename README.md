@@ -1,11 +1,15 @@
 # 2048_game
 2048 Game
 
-To compile game:
-    make
-    ./2048
+# To compile game: #
+    * make *
 
-To run tests:
-    make test
-    ./2048_test
+# To run game: #
+    * ./2048 *
+
+# To compile tests: #
+    * make test *
+
+# To run tests: #
+    * ./2048_test *
 
