@@ -2,14 +2,14 @@
 2048 Game
 
 ## To compile game: ##
-    *make*
+    #### make ####
 
 ## To run game: ##
-    *./2048*
+    #### ./2048 ####
 
 ## To compile tests: ##
-    *make test*
+    #### make test ####
 
 ## To run tests: ##
-    *./2048_test*
+    #### ./2048_test ####
 
